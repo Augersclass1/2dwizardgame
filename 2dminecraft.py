@@ -25,10 +25,18 @@ CHUNK_SIZE = 16
 AIR = 0
 DIRT_TILE = 1
 STONE_TILE = 2
+GRASS_TILE = 3
+SAND_TILE = 4
+WOOD_TILE = 5
+LEAF_TILE = 6
 
 WHITE = (255, 255, 255)
 DIRT_COLOR = (139, 69, 19)
 STONE_COLOR = (110, 110, 110)
+GRASS_COLOR = (34, 139, 34)
+SAND_COLOR = (194, 178, 128)
+WOOD_COLOR = (101, 67, 33)
+LEAF_COLOR = (50, 205, 50)
 PLAYER_COLOR = (0, 0, 255)
 debug = False
 selected_block = DIRT_TILE
@@ -92,6 +100,25 @@ def get_height(global_x):
         4 * math.sin(global_x / hill_width) +
         2 * math.sin(global_x / hill_height)
     )
+def generate_tree(tiles, x, y):
+    height = random.randint(3, 5)
+
+    # Trunk
+    for i in range(height):
+        if y - i >= 0:
+            tiles[y - i][x] = WOOD_TILE
+
+    # Leaves (simple blob)
+    leaf_start = y - height
+    for lx in range(-2, 3):
+        for ly in range(-2, 3):
+            if abs(lx) + abs(ly) < 4:  # diamond shape
+                tx = x + lx
+                ty = leaf_start + ly
+                if 0 <= tx < CHUNK_SIZE and 0 <= ty < CHUNK_SIZE:
+                    if tiles[ty][tx] == AIR:
+                        tiles[ty][tx] = LEAF_TILE
+
 def generate_chunk(cx, cy):
     tiles = [[AIR for _ in range(CHUNK_SIZE)] for _ in range(CHUNK_SIZE)]
     
@@ -102,12 +129,25 @@ def generate_chunk(cx, cy):
             global_y = cy * CHUNK_SIZE + y
             ground_height = get_height(global_x)
             if global_y > ground_height:
-                if global_y > ground_height + 4:
+                if global_y == ground_height + 1 and random.random() < 0.7:
+                    tiles[y][x] = GRASS_TILE
+                elif global_y > ground_height + 4:
                     tiles[y][x] = STONE_TILE if random.random() > 0.05 else DIRT_TILE
                 else:
                    tiles[y][x] = STONE_TILE if random.random() < 0.35 else DIRT_TILE
  
             #ground_level += random.randint(-1,1)
+    # After terrain generation inside generate_chunk()
+    for x in range(CHUNK_SIZE):
+        global_x = cx * CHUNK_SIZE + x
+        ground_y = get_height(global_x)
+        # Convert global ground_y to local chunk coordinates
+        local_y = ground_y - cy * CHUNK_SIZE
+        # Only place trees if the ground is inside this chunk
+        if 0 <= local_y < CHUNK_SIZE:
+            # Chance of tree
+            if random.random() < 0.03:  # 3% chance per column
+                generate_tree(tiles, x, local_y)
 
     return tiles
 
@@ -165,11 +205,11 @@ class Player:
         keys = pygame.key.get_pressed()
         self.vel_x = 0
 
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             self.vel_x = -5
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.vel_x = 5
-        if keys[pygame.K_UP] and self.on_ground:
+        if keys[pygame.K_w] and self.on_ground:
             self.vel_y = -12
             self.on_ground = False
 
@@ -214,6 +254,12 @@ class Player:
         )
 
 def draw_debug(surface, player, cam_x, cam_y, clock):
+    mx, my = pygame.mouse.get_pos()
+    world_mx = mx + cam_x
+    world_my = my + cam_y
+    tile_x = world_mx // TILE_SIZE
+    tile_y = world_my // TILE_SIZE
+
     lines = [
         f"FPS: {int(clock.get_fps())}",
         f"Player X: {player.rect.x}",
@@ -221,6 +267,10 @@ def draw_debug(surface, player, cam_x, cam_y, clock):
         f"Chunk X: {player.rect.centerx // (TILE_SIZE * CHUNK_SIZE)}",
         f"Chunk Y: {player.rect.centery // (TILE_SIZE * CHUNK_SIZE)}",
         f"Loaded Chunks: {len(world)}",
+        "",
+        f"Mouse Screen: {mx}, {my}",
+        f"Mouse World: {world_mx}, {world_my}",
+        f"Mouse Tile: {tile_x}, {tile_y}",
     ]
 
     y = 10
@@ -253,6 +303,14 @@ def draw_world(surface, cam_x, cam_y):
                     color = DIRT_COLOR
                 elif tile == STONE_TILE:
                     color = STONE_COLOR
+                elif tile == GRASS_TILE:
+                    color = GRASS_COLOR
+                elif tile == SAND_TILE:
+                    color = SAND_COLOR
+                elif tile == WOOD_TILE:
+                    color = WOOD_COLOR
+                elif tile == LEAF_TILE:
+                    color = LEAF_COLOR
                 else:
                     continue
 
@@ -288,10 +346,14 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left click
+                if event.button == 3:  # Right click
                     tx, ty = get_tile_from_mouse(cam_x, cam_y)
                     if can_place(player, tx, ty):
                         place_block(tx, ty, selected_block)
+                if event.button == 1:  # Left click
+                    tx, ty = get_tile_from_mouse(cam_x, cam_y)
+                    if can_place(player, tx, ty):
+                        place_block(tx, ty, AIR)
 
 
         player.handle_input()
