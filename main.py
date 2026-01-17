@@ -3,6 +3,7 @@ import sys
 import random
 import math
 #run with python c:/Users/felix/OneDrive/Desktop/2dwizardgame/2dminecraft.py
+
 # =====================
 # INITIAL SETUP
 # =====================
