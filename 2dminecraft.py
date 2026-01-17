@@ -146,7 +146,7 @@ def generate_chunk(cx, cy):
         # Only place trees if the ground is inside this chunk
         if 0 <= local_y < CHUNK_SIZE:
             # Chance of tree
-            if random.random() < 0.03:  # 3% chance per column
+            if random.random() < 0.04:  # 4% chance per column
                 generate_tree(tiles, x, local_y)
 
     return tiles
