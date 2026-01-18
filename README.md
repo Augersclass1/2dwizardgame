@@ -55,15 +55,20 @@ The game features procedurally generated terrain, chunk loading, basic physics, 
 - Pygame
 
 Install pygame with:
-"""pip install pygame"""
-▶️ How to Run
+"pip install pygame"
+
+---
+
+#▶️ How to Run
 
 From the terminal or command prompt:
 
 python 2dminecraft.py
 The game runs in fullscreen mode by default.
 
-🗺️ World Generation
+---
+
+#🗺️ World Generation
 
 Terrain height is generated using sine waves for smooth hills
 
@@ -73,7 +78,7 @@ Chunks are generated only when needed and stored in memory
 
 Trees spawn randomly on valid ground tiles
 
-🧪 Debug Mode (F3)
+#🧪 Debug Mode (F3)
 
 Displays:
 
@@ -87,7 +92,9 @@ Loaded chunk count
 
 Mouse screen, world, and tile coordinates
 
-🚧 Known Limitations
+---
+
+#🚧 Known Limitations
 
 No saving/loading of worlds
 
@@ -97,7 +104,7 @@ Single block type selection
 
 No UI or inventory system
 
-🚀 Future Ideas
+#🚀 Future Ideas
 
 Inventory system
 
@@ -111,14 +118,4 @@ Biomes
 
 Sound effects and music
 
-📄 License
-
-This project is for learning and experimentation.
-Feel free to modify, expand, and build upon it.
-
-
-If you want, I can also:
-- Add **screenshots section**
-- Write a **dev notes** section
-- Make a **GitHub-style badge header**
-- Tailor it to a **school or portfolio project**
+---
